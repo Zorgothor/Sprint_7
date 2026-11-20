@@ -1,0 +1,164 @@
+{
+  "info": {
+    "name": "Sprint 7 — Yandex Scooter API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "https://qa-scooter.praktikum-services.ru"
+    },
+    {
+      "key": "login",
+      "value": ""
+    },
+    {
+      "key": "password",
+      "value": ""
+    },
+    {
+      "key": "courierId",
+      "value": ""
+    }
+  ],
+  "item": [
+    {
+      "name": "1. Create courier",
+      "event": [
+        {
+          "listen": "prerequest",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.collectionVariables.set('login', 'courier_' + pm.variables.replaceIn('{{$randomUUID}}').replace(/-/g, '').slice(0, 12));",
+              "pm.collectionVariables.set('password', pm.variables.replaceIn('{{$randomPassword}}'));"
+            ]
+          }
+        },
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('ok is true', () => pm.expect(pm.response.json().ok).to.eql(true));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"login\": \"{{login}}\",\n  \"password\": \"{{password}}\",\n  \"firstName\": \"Postman\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/courier"
+      }
+    },
+    {
+      "name": "2. Login courier",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('response has id', () => { pm.expect(pm.response.json()).to.have.property('id'); pm.collectionVariables.set('courierId', pm.response.json().id); });"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"login\": \"{{login}}\",\n  \"password\": \"{{password}}\"\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/courier/login"
+      }
+    },
+    {
+      "name": "3. Create order (both colors)",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 201', () => pm.response.to.have.status(201));",
+              "pm.test('response has track', () => pm.expect(pm.response.json()).to.have.property('track'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"firstName\": \"Postman\",\n  \"lastName\": \"Tester\",\n  \"address\": \"Москва, улица Тестовая, 1\",\n  \"metroStation\": 4,\n  \"phone\": \"+79990000000\",\n  \"rentTime\": 2,\n  \"deliveryDate\": \"2026-12-01\",\n  \"comment\": \"Postman Sprint 7\",\n  \"color\": [\n    \"BLACK\",\n    \"GREY\"\n  ]\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": "{{baseUrl}}/api/v1/orders"
+      }
+    },
+    {
+      "name": "4. Get orders list",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "type": "text/javascript",
+            "exec": [
+              "pm.test('HTTP 200', () => pm.response.to.have.status(200));",
+              "pm.test('orders is an array', () => pm.expect(pm.response.json().orders).to.be.an('array'));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "url": "{{baseUrl}}/api/v1/orders"
+      }
+    },
+    {
+      "name": "5. Delete courier",
+      "request": {
+        "method": "DELETE",
+        "url": "{{baseUrl}}/api/v1/courier/{{courierId}}"
+      }
+    }
+  ]
+}
