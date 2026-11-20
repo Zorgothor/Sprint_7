@@ -1,8 +1,8 @@
-
 import pytest
 import requests
 
 from helpers import BASE_URL, create_courier_data
+
 
 @pytest.fixture
 def registered_courier():
@@ -28,10 +28,14 @@ def registered_courier():
         timeout=30,
     )
 
-    if login_response.status_code == 200:
-        courier_id = login_response.json()["id"]
+    assert login_response.status_code == 200, (
+        "Не удалось авторизовать курьера для удаления после теста"
+    )
+    courier_id = login_response.json()["id"]
 
-        requests.delete(
-            f"{BASE_URL}/api/v1/courier/{courier_id}",
-            timeout=30,
-        )
+    delete_response = requests.delete(
+        f"{BASE_URL}/api/v1/courier/{courier_id}",
+        timeout=30,
+    )
+
+    assert delete_response.status_code == 200
